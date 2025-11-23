@@ -1,6 +1,7 @@
 #include "binarni_strom.h"
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 
 t_uzel* vytvorUzel(int data) {
 	t_uzel* novyUzel = (t_uzel*)malloc(sizeof(t_uzel));
@@ -93,6 +94,18 @@ void uvolniStrom(t_uzel* koren) {
 	free(koren);
 }
 
+void ulozStrom_rekurze(t_uzel* koren, FILE* soubor) {
+	
+	if (koren == NULL) {
+		fprintf(soubor, "#\n");
+		return;
+	}
+	
+	fprintf(soubor, "%d\n", koren->data);
+	ulozStrom_rekurze(koren->levy, soubor);
+	ulozStrom_rekurze(koren->pravy, soubor);
+}
+
 int ulozStrom(t_uzel* koren, const char* nazevSouboru) {
 	FILE* soubor;
 
@@ -106,4 +119,44 @@ int ulozStrom(t_uzel* koren, const char* nazevSouboru) {
 	printf("Strom byl uspesne ulozen do souboru '%s'\n", nazevSouboru);
 	
 	return 1;
+}
+
+t_uzel* nactiStrom_rekurze(FILE* soubor) {
+	char buffer[100];
+	
+	if (fscanf_s(soubor, "%s", buffer, (unsigned)_countof(buffer)) == EOF) {
+		return NULL;
+	}
+
+	if (strcmp(buffer, "#") == 0) {
+		return NULL;
+	}
+
+	int data = atoi(buffer);
+
+	t_uzel* novyUzel = vytvorUzel(data);
+
+	if (novyUzel == NULL) {
+		return NULL;
+	}
+
+	novyUzel->levy = nactiStrom_rekurze(soubor);
+	novyUzel->pravy = nactiStrom_rekurze(soubor);
+
+	return novyUzel;
+}
+
+t_uzel* nactiStrom(const char* nazevSouboru) {
+	FILE* soubor;
+	
+	if (fopen_s(&soubor, nazevSouboru, "r") != 0) {
+		printf("Chyba: Soubor '%s' se nepodarilo otevrit pro cteni.\n", nazevSouboru);
+		return NULL;
+	}
+
+	t_uzel* koren = nactiStrom_rekurze(soubor);
+	fclose(soubor);
+	printf("Strom byl uspesne nacten ze souboru '%s'\n", nazevSouboru);
+	
+	return koren;
 }

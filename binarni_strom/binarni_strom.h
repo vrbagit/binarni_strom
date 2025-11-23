@@ -23,3 +23,7 @@ void uvolniStrom(t_uzel* koren);
 int ulozStrom(t_uzel* koren, const char* nazevSouboru);
 
 void ulozStrom_rekurze(t_uzel* koren, FILE* soubor);
+
+t_uzel* nactiStrom(const char* nazevSouboru);
+
+t_uzel* nactiStrom_rekurze(FILE* soubor);
